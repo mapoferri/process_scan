@@ -166,8 +166,7 @@ class ProcessMRXSData:
         grouped = final_result.groupby("Antibody")
         for group_name, group_data in grouped:
             output_filename = f"{group_name}_data.csv"
-            output_filepath = os.path.join(output_path, output_filename)
-            if 
+            output_filepath = os.path.join(output_path, output_filename) 
             group_data.to_csv(output_filepath, index=False)
             print(f"Saved data for {group_name} to {output_filename}")
 
@@ -181,19 +180,9 @@ class ProcessMRXSData:
 
     @staticmethod
     def process_rate(output_path, final_data_filename):
-         """
-        Process immunopositivity rate from saved files and merge into a final DataFrame.
 
-        :param output_path: Path containing antibody-specific data files.
-        :param final_data_filename: Name of the final CSV or Excel file to save.
-
-        :return: Name of the final data file.
-        """
-
-        #Dataframe that is the basic one with just one column
         final_df = pd.DataFrame(columns=['HD'])
         no_xls_files = True
-
         for filename in os.listdir(output_path):
             if filename.endswith(('.xlsx', 'csv')):
                 xlsx_file = os.path.join(output_path, filename)
