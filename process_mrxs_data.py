@@ -297,7 +297,7 @@ class ProcessMRXSData:
                         sns.scatterplot(x=graph_data[pos_rate_columns[i]], y=graph_data[pos_rate_columns[j]], ax=axes[i, j])
                         axes[i, j].set_xlabel(pos_rate_columns[i])
                         axes[i, j].set_ylabel(pos_rate_columns[j])
-                        axes[i, j].set_title(f'Scatterplot: {pos_rate_columns[i]} vs. {pos_rate_columns[j]}')
+                        axes[i, j].set_title(f'{pos_rate_columns[i]} vs. {pos_rate_columns[j]}')
 
             plt.tight_layout()
 
