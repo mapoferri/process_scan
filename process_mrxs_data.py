@@ -58,7 +58,7 @@ class ProcessMRXSData:
             merged_df = pd.DataFrame() # Initial empty dataframe
             for sheet_name, sheet_df in df_inventory.items():
                 if not sheet_df.empty:
-                    #print (sheet_df.columns)
+                    print (sheet_df.columns)
                     if 'ID_Slidescanner' not in sheet_df.columns:
                         print("Error: 'ID_Slidescanner' column not found in the sheet.")
                         #sys.exit(1)
@@ -70,17 +70,17 @@ class ProcessMRXSData:
                         merged_df = pd.concat([merged_df, result], ignore_index=True)
 
         # Create the merged dataframe based on the correspondence between the Image value and the ID_Slidescanner value in the Inventory
-                        if not merged_df.empty:
-                            final_df = merged_df[['HD', 'Antibody', 'ID_Slidescanner', 'Image']]
-                            final_df = final_df.head(1)
-                            final_df['ID_Slidescanner'] = final_df['ID_Slidescanner'].values[0]
-                            final_df['Image'] = final_df['Image'].values[0]
-                            #print(f"FINAL")
+            if not merged_df.empty:
+                final_df = merged_df[['HD', 'Antibody', 'ID_Slidescanner', 'Image']]
+                final_df = final_df.head(1)
+                final_df['ID_Slidescanner'] = final_df['ID_Slidescanner'].values[0]
+                final_df['Image'] = final_df['Image'].values[0]
+                                                             #print(f"FINAL")
                             #print(final_df.columns)
-                        else:
-                            print("Merged DataFrame is empty.")
-                            final_df = pd.DataFrame({'HD': [None], 'Antibody': [None], 'ID_Slidescanner': [None], 'Image': [None]})
-                            return final_df
+            else:
+                print("Merged DataFrame is empty.")
+                final_df = pd.DataFrame({'HD': [None], 'Antibody': [None], 'ID_Slidescanner': [None], 'Image': [None]})
+                return final_df
         
 
         # Create the final DataFrame
@@ -143,7 +143,7 @@ class ProcessMRXSData:
 
         # For each slide, call the process_data function
         for filename in os.listdir(directory_path):
-            if filename.endswith('.txt'):
+            if filename.endswith('.mrxs'):
                 mrxs_file = os.path.join(directory_path, filename)
                 print(f"Processing file: {mrxs_file}")
                 no_mrxs_files = False
@@ -183,7 +183,14 @@ class ProcessMRXSData:
 
         final_df = pd.DataFrame(columns=['HD'])
         no_xls_files = True
+        
+        # Check if the output path exists, and create it if not
+        #if not os.path.exists(output_path):
+        #    os.makedirs(output_path)
+
+
         for filename in os.listdir(output_path):
+            print(f"Found file: {filename}")
             if filename.endswith(('.xlsx', 'csv')):
                 xlsx_file = os.path.join(output_path, filename)
                 print(f"Processing file: {xlsx_file}")
@@ -205,7 +212,7 @@ class ProcessMRXSData:
         
         if no_xls_files:
             print(f"No files has been found to study the correlation of the data, check them.")
-            sys.exit[1]
+            sys.exit(1)
         
         if final_data_filename.endswith('.csv'):
             final_df.to_csv(final_data_filename, index=False)
@@ -344,3 +351,4 @@ if __name__ == "__main__":
     print(f"Final DataFrame saved to {output_filename}")
     print(f"Final Immunoposivity DataFrame saved to {final_data_filename}")
     print(f"Processing complete.")
+    
