@@ -177,6 +177,8 @@ class ProcessMRXSData:
             print("No files with .mrxs extension found in the specified directory.")
             sys.exit(1)
          
+        result_dfs = [df for df in result_dfs if isinstance(df, pd.DataFrame)]
+
         # Concatenate all result DataFrames into a single DataFrame
         final_result = pd.concat(result_dfs)
         print (final_result)
