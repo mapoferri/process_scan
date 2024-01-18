@@ -11,27 +11,41 @@ ProcessMRXSData is a Python class designed to process data from MRXS files, merg
 
 1. Clone or download this repository to your local machine.
 
-2. Call directly the class (internal script providing already with the resulting rates and images):
+2. Extract the directory (whenever you like) and open the directory.
 
-There are two ways to do it via BASH terminal:
+```
+unzip process_mrxs-main -d process_mrxs
+cd process_mrxs
+```
+
+3. Call directly the class (internal script providing already with the resulting rates and images):
+
+There are different ways to do it via BASH terminal:
+
+Using the already workflow\_template in this directory: 
+
+```
+python workflow_template.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/to/outputs
+
+```
+
 
 Calling the script directly with the path stated for complete:
 
 ```
-python process_mrxs_data.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/for/collecting/all/dataframes path/to/common/output/dataframe
+python process_mrxs_data.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/to/outputs
 ```
 
 Or using an ENV (environmental) variables.
 ```
 EXPORT mrxs_directory="path/to/your/mrxs_files"
 EXPORT inventory_file="path/to/your/inventory.csv"
-EXPORT output_path="path/to/your/directory/for/collecting/all/dataframes" #make sure to create it previously
-EXPORT output_filename="path/to/common/output/dataframe"
+EXPORT output_path="path/to/your/directory/to/outputs" #make sure to create it previously
 ```
 
 ```python
 
-python process_mrxs_data.py $mrxs_directory $inventory_file $output_path $output_filename
+python process_mrxs_data.py $mrxs_directory $inventory_file $output_path 
 ```  
 
 ### Limitations
