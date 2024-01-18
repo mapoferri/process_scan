@@ -232,33 +232,37 @@ class ProcessMRXSData:
                 elif filename.endswith('.xlsx'):
                     xlsx_data = pd.read_excel(xlsx_file)
                     
-                print (f"Columns:  {xlsx_data.columns}")
+        #        print (f"Columns:  {xlsx_data.columns}")
                 if all(col in xlsx_data.columns for col in ['sample_ID', 'Antibody', 'Positivity Rate', 'Parent']):
                     data = xlsx_data[['sample_ID','Antibody','Parent', 'Positivity Rate']]
                     data = data.copy()
                     #data.rename(columns={'Positivity Rate': f"Positivity Rate ({xlsx_data['Antibody'].iloc[0]})"}, inplace=True)
-                    print(f"Data columns: {data.columns}")
+     #               print(f"Data columns: {data.columns}")
                     
 
                     final_df = pd.concat([final_df, data])
-                    #final_df = pd.merge(final_df, data, on=['sample_ID','Parent'], how='outer')
+                    #final_df = pd.merge(final_df, data, on=['sample_ID', 'Parent'], how='outer')
 
-        #print (final_df) 
+        print (final_df) 
         
         # Merge duplicate samples based on 'sample_ID'
-        final_df_merged = ProcessMRXSData.merge_duplicate_samples(final_df)
+        final_files = ProcessMRXSData.merge_samples(final_df)
+        
+        print (final_files)
+        #print (final_df_merged)
 
         if no_xls_files:
             print(f"No files has been found to study the correlation of the data, check them.")
             sys.exit(1)
         if final_data_filename.endswith('.csv'):
-            final_df_merged.to_csv(final_data_filename, index=False)
+            final_df.to_csv(final_data_filename, index=False)
         elif final_data_filename.endswith('.xlsx'):
-            final_df_merged.to_excel(final_data_filename, index=False)
+            final_df.to_excel(final_data_filename, index=False)
         final_data_filename += '.csv'
-        final_df_merged.to_csv(final_data_filename, index=False)
+        final_df.to_csv(final_data_filename, index=False)
 
-        return final_data_filename
+        return final_files
+        #return a list of the files produced, so for each region, the graphs are going to be produced 
         
 
     def merge_duplicate_samples(data):
@@ -277,6 +281,44 @@ class ProcessMRXSData:
         #new_columns.append("Antibody")
         merged_data.columns = new_columns
         return merged_data
+
+
+    def merge_samples(data):
+
+        """
+        Merge the files per region with different Positivity rate, so to have dtataframes to consult for the creation of the scatterplots
+        :params final_dataframe: Dataframe obtained by process_rate function
+        """
+
+        parents = data['Parent'].unique()
+        created_files = []
+
+        for parent in parents: 
+            parent_df = data[data['Parent'] == parent]
+            sample_ids = data['sample_ID'].unique()
+
+            #Create a df for the current Parent value
+
+            parent_result_df = pd.DataFrame(columns=['sample_ID'])
+
+            for sample_id in sample_ids:
+                sample_id_df = parent_df[parent_df['sample_ID'] == sample_id]
+                if len(sample_id_df) > 1:
+                    #Populate the dataframe
+                    row = {'sample_ID' : int(sample_id)}
+                    for _, entry in sample_id_df.iterrows():
+                        antibody_col = f"Positivity Rate ({entry['Antibody']})"
+                        row[antibody_col] = entry['Positivity Rate']
+
+                    parent_result_df = pd.concat([parent_result_df, pd.DataFrame([row])], ignore_index=True)
+
+            if not parent_result_df.empty:
+                file_name= f"{parent}_data.csv"
+                parent_result_df.to_csv(file_name, index=False)
+                created_files.append(file_name)
+
+        return created_files
+
     
 
     @staticmethod
@@ -295,56 +337,121 @@ class ProcessMRXSData:
                 graph_data = pd.read_excel(filename, engine='xlrd')
             
             graph_data = graph_data.dropna()
+            
             pos_rate_columns = [col for col in graph_data.columns if 'Positivity Rate' in col]
             
             print("Data columns:", graph_data.columns)
 
             if len(pos_rate_columns) < 2:
                 print("Not enough 'Positivity Rate' columns found for heatmaps.")
-                return
-
-           
-
+                return 
             #data = graph_data.select_dtypes(include=[np.number])
             #selected_columns = graph_data.filter(like="Positivity Rate")
-
-
-            for parent, parent_data in graph_data.groupby('Parent'):
-                selected_columns = graph_data[pos_rate_columns]
-                pearson_corr = selected_columns.corr(method='pearson')
-                spearman_corr = selected_columns.corr(method='spearman')
-                kendall_corr = selected_columns.corr(method='kendall')
+            selected_columns = graph_data[pos_rate_columns]
+            pearson_corr = selected_columns.corr(method='pearson')
+            spearman_corr = selected_columns.corr(method='spearman')
+            kendall_corr = selected_columns.corr(method='kendall')
 
             #plt.figure(figsize=(10, 8))
             #sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
 
             #plt.savefig("pearson_correlation_heatmap.png")
             #plt.show()
-            
+            base_filename = os.path.basename(filename)
+            prefix = base_filename.split('_')[0]
+ 
             # Create a single figure with three subplots
-                fig, axes = plt.subplots(1, 3, figsize=(15, 6))
+            fig, axes = plt.subplots(1, 3, figsize=(15, 6))
 
             # Plot Pearson Correlation in the first subplot
-                sns.heatmap(pearson_corr, annot=True, cmap='coolwarm', fmt=".2f", ax=axes[0])
-                axes[0].set_title(f'{parent} - Pearson Correlation')
+            sns.heatmap(pearson_corr, annot=True, cmap='coolwarm', fmt=".2f", ax=axes[0])
+            axes[0].set_title(f'{prefix} - Pearson Correlation')
 
             # Plot Spearman Correlation in the second subplot
-                sns.heatmap(spearman_corr, annot=True, cmap='coolwarm', fmt=".2f", ax=axes[1])
-                axes[1].set_title(f'{parent} - Spearman Correlation')
+            sns.heatmap(spearman_corr, annot=True, cmap='coolwarm', fmt=".2f", ax=axes[1])
+            axes[1].set_title(f'{prefix} - Spearman Correlation')
 
             # Plot Kendall Correlation in the third subplot
-                sns.heatmap(kendall_corr, annot=True, cmap='coolwarm', fmt=".2f", ax=axes[2])
-                axes[2].set_title(f'{parent} - Kendall Correlation')
+            sns.heatmap(kendall_corr, annot=True, cmap='coolwarm', fmt=".2f", ax=axes[2])
+            axes[2].set_title(f'{prefix} - Kendall Correlation')
 
             # Adjust spacing between subplots
-                plt.tight_layout()
+            plt.tight_layout()
 
             # Save the figure to a file (e.g., "correlation_heatmaps.png")
-                plt.savefig(f"{parent}_correlation_heatmaps.png")
+            plt.savefig(f"{prefix}_correlation_heatmaps.png")
 
 
         else:
             print(f"No files has been found to study the correlation of the data, no graphs has been produced.")
+            sys.exit(1)
+
+    @staticmethod
+    def newprocess_heatmap(filename):
+        """
+    Generate and save correlation heatmaps based on immunopositivity rate data.
+
+    :param filename: Path to the data file for generating heatmaps.
+    """
+        if filename.endswith(('.csv', '.xlsx')):
+            if filename.endswith('.csv'):
+                graph_data = pd.read_csv(filename)
+            elif filename.endswith('.xlsx'):
+                graph_data = pd.read_excel(filename, engine='xlrd')
+
+            graph_data = graph_data.dropna()
+
+            pos_rate_columns = [col for col in graph_data.columns if 'Positivity Rate' in col]
+
+            print("Data columns:", graph_data.columns)
+
+            if len(pos_rate_columns) < 2:
+                print("Not enough 'Positivity Rate' columns found for heatmaps.")
+                return
+
+            selected_columns = graph_data[pos_rate_columns]
+            pearson_corr = selected_columns.corr(method='pearson')
+            spearman_corr = selected_columns.corr(method='spearman')
+            kendall_corr = selected_columns.corr(method='kendall')
+
+            # Check for statistical significance (e.g., p-value threshold of 0.05)
+            significance_threshold = 0.05
+            is_pearson_significant = (pearson_corr.apply(lambda x: x.apply(lambda y: y < significance_threshold))).any().any()
+            is_spearman_significant = (spearman_corr.apply(lambda x: x.apply(lambda y: y < significance_threshold))).any().any()
+            is_kendall_significant = (kendall_corr.apply(lambda x: x.apply(lambda y: y < significance_threshold))).any().any()
+
+            if is_pearson_significant or is_spearman_significant or is_kendall_significant:
+                # Create a single figure with three subplots
+                fig, axes = plt.subplots(1, 3, figsize=(15, 6))
+
+                # Plot Pearson Correlation in the first subplot if significant
+                if is_pearson_significant:
+                    sns.heatmap(pearson_corr, annot=True, cmap='coolwarm', fmt=".2f", ax=axes[0])
+                    axes[0].set_title(f'{prefix} - Pearson Correlation')
+
+                # Plot Spearman Correlation in the second subplot if significant
+                if is_spearman_significant:
+                    sns.heatmap(spearman_corr, annot=True, cmap='coolwarm', fmt=".2f", ax=axes[1])
+                    axes[1].set_title(f'{prefix} - Spearman Correlation')
+
+                # Plot Kendall Correlation in the third subplot if significant
+                if is_kendall_significant:
+                    sns.heatmap(kendall_corr, annot=True, cmap='coolwarm', fmt=".2f", ax=axes[2])
+                    axes[2].set_title(f'{prefix} - Kendall Correlation')
+
+                # Adjust spacing between subplots
+                plt.tight_layout()
+
+                # Save the figure to a file (e.g., "correlation_heatmaps.png")
+                base_filename = os.path.basename(filename)
+                prefix = base_filename.split('_')[0]
+                plt.savefig(f"{prefix}_correlation_heatmaps.png")
+
+            else:
+                print("No statistically significant correlations found. No heatmaps will be produced.")
+
+        else:
+            print("No files have been found to study the correlation of the data, no heatmaps have been produced.")
             sys.exit(1)
 
 
@@ -355,7 +462,7 @@ class ProcessMRXSData:
 
         :param filename: Path to the data file for generating scatterplots.
         """
-
+        print (filename)
         if filename.endswith(('.csv', '.xlsx')):
             if filename.endswith('.csv'):
                     graph_data = pd.read_csv(filename)
@@ -373,39 +480,32 @@ class ProcessMRXSData:
                 print("Not enough 'Positivity Rate' columns found for scatterplots.")
                 return
 
-            if len(graph_data['Antibody'].unique()) >1:
-                for parent, parent_data in graph_data.groupby('Parent'):
-                    scatterplot_filename = f"scatterplot_{parent}.png"
-                    num_columns = len(pos_rate_columns)
+            fig, ax = plt.subplots(figsize=(10, 8))
 
-                    fig, axes = plt.subplots(num_columns, num_columns, figsize=(12, 8))
+            for i in range(num_columns):
+                for j in range(i+1, num_columns):
+                    if i != j:
+                        sns.scatterplot(x=graph_data[pos_rate_columns[i]], y=graph_data[pos_rate_columns[j]],label=f'{pos_rate_columns[i]} vs. {pos_rate_columns[j]}')
+                        #axes[i, j].set_xlabel(pos_rate_columns[i])
+                        #axes[i, j].set_ylabel(pos_rate_columns[j])
+                        #axes[i, j].set_title(f'{pos_rate_columns[i]} vs. {pos_rate_columns[j]}')
+            
+            ax.set_xlabel(pos_rate_columns[0])
+            ax.set_ylabel(pos_rate_columns[1])
+            ax.set_title(f'{pos_rate_columns[0]} vs. {pos_rate_columns[1]}')
 
-                    for i, col_i in enumerate(pos_rate_columns):
-                        for j, col_j in enumerate(pos_rate_columns):
-                            if i != j:
-                                x_values = [val for sublist in parent_data[col_i] for val in sublist]
-                                y_values = [val for sublist in parent_data[col_j] for val in sublist]
+            plt.legend() 
+            plt.tight_layout()
 
-                                sns.scatterplot(x=x_values, y=y_values, hue=np.repeat(parent_data['Antibody'], len(x_values)), ax=axes[i, j])
-                                axes[i, j].set_xlabel(col_i)
-                                axes[i, j].set_ylabel(col_j)
-                                axes[i, j].set_title(f'{col_i} vs. {col_j}')
-                                #sns.scatterplot(x=parent_data[[col_i]].values.tolist(), y=parent_data[[col_j]].values.tolist(), hue=parent_data['Antibody'], ax=axes[i, j])
-                                #axes[i, j].set_xlabel(col_i)
-                                #axes[i, j].set_ylabel(col_j)
-                                #axes[i, j].set_title(f'{col_i} vs. {col_j}')
+            
+            # Save the figure with all scatterplots as a single PNG file
+            base_filename = os.path.basename(filename)
+            prefix = base_filename.split('_')[0]
+            plt.savefig(f"{prefix}_scatterplots.png")
 
-                    plt.tight_layout()
+            # Close the figure to release resources
+            plt.close()
 
-
-                    # Save the figure with all scatterplots as a single PNG file
-                    plt.savefig(scatterplot_filename)
-
-                    # Close the figure to release resources
-                    plt.close()
-                    print(f"Saved scatterplot for {parent} to {scatterplot_filename}")
-            else:
-                print("Only one antibody found. Scatterplots wil not be produced")
 
         else:
             print(f"No files has been found to study the correlation of the data, no graphs has been produced.")
