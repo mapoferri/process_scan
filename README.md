@@ -72,10 +72,9 @@ from process_mrxs_data import ProcessMRXSData
 ```python
 mrxs_directory = "path/to/your/mrxs_files"
 inventory_file = "path/to/your/inventory.csv"
-output_path = "path/to/your/directory/for/collecting/all/dataframes"
-output_filename = "path/to/common/output/dataframe"
+output_path = "path/to/your/directory/to/outputs"
 
-processor = ProcessMRXSData.process_directory(mrxs_directory, inventory_file, output_path, output_filename)
+processor = ProcessMRXSData.process_directory(mrxs_directory, inventory_file, output_path)
 ```
 
 4. Call the other functions for the rate calculation and relative images:
@@ -84,9 +83,9 @@ processor = ProcessMRXSData.process_directory(mrxs_directory, inventory_file, ou
 ```python
 
 rate = ProcessMRXSData.process_rate(output_path, output_filename)
-
-ProcessMRXSData.process_heatmaps(rate)
-ProcessMRXSData.process_scatterplots(rate)
+for file in rate:
+  ProcessMRXSData.process_heatmaps(rate)  
+  ProcessMRXSData.process_scatterplots(rate)
 
 ```
 5. Check the output images in the output\_path 
@@ -113,8 +112,8 @@ Process MRXS data from a directory, save antibody-specific data, and return the 
 ```python 
 directory_path = "path/to/your/mrxs/files/directory"
 output_path = "path/to/output/data/directory"
-output_filename = "output_data.csv"  # Name of the output CSV file
-final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_filename)
+
+final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path)
 ```
 
 Process immunopositivity rate from saved files and merge it into a final DataFrame using the process\_rate method:
