@@ -6,6 +6,7 @@ def main():
     parser.add_argument("directory_path", help="Path to the directory containing .mrxs files")
     parser.add_argument("inventory_file", help="Path to the inventory file")
     parser.add_argument("output_path", help="Path to the directory containing output files")
+    parser.add_argument("output_extension", help="Extension of the final file")
     #parser.add_argument("output_filename", help="Name of the output CSV file antibody-specific")
 
     args = parser.parse_args()
@@ -14,9 +15,11 @@ def main():
     inventory_file = args.inventory_file
     #output_filename = args.output_filename
     output_path = args.output_path
-    final_data_filename = "final_data"
+    output_ex = args.output_extension
+    final_data_filename = "final_data" + f".{output_ex}"
+    print ("Final data filename", final_data_filename)
 
-    final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path)
+    final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_ex)
     final_files = ProcessMRXSData.process_rate(output_path, final_data_filename)
     
     #print (final_rate)
