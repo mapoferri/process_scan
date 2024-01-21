@@ -2,10 +2,16 @@
 
 ProcessMRXSData is a Python class designed to process data from MRXS files, merge it with inventory data, calculate immunopositivity statistics, and generate useful visualizations like heatmaps and scatterplots.
 
+
+This is the second half of the HDAB - Immunopositivity Tutorial available here ().
+
+
 ## Prerequisites
 
 - Python 3.7 or higher
 - Required Python packages: `pandas`, `numpy`, `seaborn`, `matplotlib`
+- Pip library opepyl > 3.2.0
+
 
 ## Non-expert Usage
 
@@ -25,7 +31,7 @@ There are different ways to do it via BASH terminal:
 Using the already workflow\_template in this directory: 
 
 ```
-python workflow_template.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/to/outputs
+python workflow_template.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/to/outputs xlsx/csv (you will need to choose one of the two)
 
 ```
 
@@ -33,7 +39,7 @@ python workflow_template.py path/to/your/mrxs_files path/to/your/inventory.csv p
 Calling the script directly with the path stated for complete:
 
 ```
-python process_mrxs_data.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/to/outputs
+python process_mrxs_data.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/to/outputs xlsx/csv
 ```
 
 Or using an ENV (environmental) variables.
@@ -41,11 +47,12 @@ Or using an ENV (environmental) variables.
 EXPORT mrxs_directory="path/to/your/mrxs_files"
 EXPORT inventory_file="path/to/your/inventory.csv"
 EXPORT output_path="path/to/your/directory/to/outputs" #make sure to create it previously
+EXPORT output_extension="xlsx/csv"
 ```
 
 ```python
 
-python process_mrxs_data.py $mrxs_directory $inventory_file $output_path 
+python process_mrxs_data.py $mrxs_directory $inventory_file $output_path $output_extension
 ```  
 
 ### Limitations
@@ -73,8 +80,9 @@ from process_mrxs_data import ProcessMRXSData
 mrxs_directory = "path/to/your/mrxs_files"
 inventory_file = "path/to/your/inventory.csv"
 output_path = "path/to/your/directory/to/outputs"
+output_extension = "xlsx/csv"
 
-processor = ProcessMRXSData.process_directory(mrxs_directory, inventory_file, output_path)
+processor = ProcessMRXSData.process_directory(mrxs_directory, inventory_file, output_path, output_extension)
 ```
 
 4. Call the other functions for the rate calculation and relative images:
@@ -113,13 +121,13 @@ Process MRXS data from a directory, save antibody-specific data, and return the 
 directory_path = "path/to/your/mrxs/files/directory"
 output_path = "path/to/output/data/directory"
 
-final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path)
+final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_extension)
 ```
 
 Process immunopositivity rate from saved files and merge it into a final DataFrame using the process\_rate method:
 
 ```python
-final_rate = ProcessMRXSData.process_rate(output_path, final_data)
+final_rate = ProcessMRXSData.process_rate(output_path, final_filename)
 ```
 
 To generate and save correlation heatmaps based on immunopositivity rate data, call the process\_heatmaps method:
