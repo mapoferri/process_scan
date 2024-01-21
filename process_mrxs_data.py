@@ -194,7 +194,7 @@ class ProcessMRXSData:
             for group_antibody, group_data_list in parent_data.items():
                 group_data = pd.concat(group_data_list, axis=0, ignore_index=True)
                 output_filename = f"{group_parent}_{group_antibody}_data"
-                group_data.rename(columns={'HD': 'sample_ID'}, inplace=True)  # Rename 'HD' column to 'sample_ID'
+                group_data.rename(columns={'HD': 'ID_Sample'}, inplace=True)  # Rename 'HD' column to 'sample_ID'
                 output_filepath = os.path.join(output_path, output_filename) 
                 file_name = output_filepath + f".{output_ext}"
                 print ("FINAL", file_name)
@@ -215,7 +215,7 @@ class ProcessMRXSData:
     @staticmethod
     def process_rate(output_path, final_data_filename):
 
-        final_df = pd.DataFrame(columns=['sample_ID', 'Parent'])
+        final_df = pd.DataFrame(columns=['ID_Sample', 'Parent'])
         no_xls_files = True
         
         # Check if the output path exists, and create it if not
@@ -238,8 +238,8 @@ class ProcessMRXSData:
                     xlsx_data = pd.read_excel(xlsx_file)
                     
         #        print (f"Columns:  {xlsx_data.columns}")
-                if all(col in xlsx_data.columns for col in ['sample_ID', 'Antibody', 'Positivity Rate', 'Parent']):
-                    data = xlsx_data[['sample_ID','Antibody','Parent', 'Positivity Rate']]
+                if all(col in xlsx_data.columns for col in ['ID_Sample', 'Antibody', 'Positivity Rate', 'Parent']):
+                    data = xlsx_data[['ID_Sample','Antibody','Parent', 'Positivity Rate']]
                     data = data.copy()
                     #data.rename(columns={'Positivity Rate': f"Positivity Rate ({xlsx_data['Antibody'].iloc[0]})"}, inplace=True)
      #               print(f"Data columns: {data.columns}")
@@ -271,13 +271,13 @@ class ProcessMRXSData:
         
 
     def merge_duplicate_samples(data):
-        merged_data = data.pivot_table(index=['sample_ID', 'Parent', 'Antibody'], columns='Antibody', values='Positivity Rate', aggfunc='first').reset_index()
+        merged_data = data.pivot_table(index=['ID_Sample', 'Parent', 'Antibody'], columns='Antibody', values='Positivity Rate', aggfunc='first').reset_index()
         #merged_data.columns = [f"Positivity Rate ({antibody})" if antibody != 'sample_ID' else 'sample_ID' for antibody in merged_data.columns]
 
         #merged_data.columns = [f"{col[0]} ({col[1]})" if col[0] not in ('sample_ID', 'Parent') else col[0] for col in merged_data.columns]
         new_columns = []
         for col in merged_data.columns:
-            if col not in ('sample_ID', 'Parent', 'Antibody'):
+            if col not in ('ID_Sample', 'Parent', 'Antibody'):
                 antibody_name = data.loc[data['Antibody'] == col, 'Antibody'].iloc[0] if any(data['Antibody'] == col) else col
                 new_columns.append(f"Positivity Rate ({antibody_name})")
             else:
@@ -300,17 +300,17 @@ class ProcessMRXSData:
 
         for parent in parents: 
             parent_df = data[data['Parent'] == parent]
-            sample_ids = data['sample_ID'].unique()
+            sample_ids = data['ID_Sample'].unique()
 
             #Create a df for the current Parent value
 
-            parent_result_df = pd.DataFrame(columns=['sample_ID'])
+            parent_result_df = pd.DataFrame(columns=['ID_Sample'])
 
             for sample_id in sample_ids:
-                sample_id_df = parent_df[parent_df['sample_ID'] == sample_id]
+                sample_id_df = parent_df[parent_df['ID_Sample'] == sample_id]
                 if len(sample_id_df) > 1:
                     #Populate the dataframe
-                    row = {'sample_ID' : int(sample_id)}
+                    row = {'ID_Sample' : int(sample_id)}
                     for _, entry in sample_id_df.iterrows():
                         antibody_col = f"Positivity Rate ({entry['Antibody']})"
                         row[antibody_col] = entry['Positivity Rate']
