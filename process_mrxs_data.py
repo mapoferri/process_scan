@@ -66,7 +66,7 @@ class ProcessMRXSData:
                 merged_df = pd.DataFrame() # Initial empty dataframe
                 for sheet_name, sheet_df in df_inventory.items():
                     if not sheet_df.empty:
-                        #print (sheet_df.columns)
+                        print (sheet_df.columns)
                         if 'ID_Slidescanner' not in sheet_df.columns:
                             print("Error: 'ID_Slidescanner' column not found in the sheet.")
                             #sys.exit(1)
@@ -139,7 +139,7 @@ class ProcessMRXSData:
 
 
     @staticmethod
-    def process_directory(directory_path, inventory_file, output_path, output_ext):
+    def process_directory(directory_path, inventory_file, output_path):
         """
         Process MRXS data from a directory, save antibody-specific data, and return the final DataFrame.
 
@@ -157,7 +157,7 @@ class ProcessMRXSData:
 
         # For each slide, call the process_data function
         for filename in os.listdir(directory_path):
-            if filename.endswith('.mrxs'):
+            if filename.endswith('.mrxs.txt'):
                 mrxs_file = os.path.join(directory_path, filename)
                 print(f"Processing file: {mrxs_file}")
                 no_mrxs_files = False
@@ -169,7 +169,7 @@ class ProcessMRXSData:
                 result_dfs.extend(processor.process_data())
             # Appending to an array, so should be fine
 
-        #print("Contents of result_dfs:")
+        print("Contents of result_dfs:")
         #for df in result_dfs:
         #    print(df[1]['Parent'].iloc[0], df[0])
     
@@ -179,7 +179,7 @@ class ProcessMRXSData:
          
         # Concatenate all result DataFrames into a single DataFrame
         final_result = pd.concat(result_dfs)
-        #print (final_result)
+        print (final_result)
         # Use defaultdict to group data based on 'Parent'
         grouped = defaultdict(lambda: defaultdict(list))
         for result_df in result_dfs:
@@ -193,15 +193,10 @@ class ProcessMRXSData:
         for group_parent, parent_data in grouped.items():
             for group_antibody, group_data_list in parent_data.items():
                 group_data = pd.concat(group_data_list, axis=0, ignore_index=True)
-                output_filename = f"{group_parent}_{group_antibody}_data"
-                group_data.rename(columns={'HD': 'ID_Sample'}, inplace=True)  # Rename 'HD' column to 'sample_ID'
+                output_filename = f"{group_parent}_{group_antibody}_data.csv"
+                group_data.rename(columns={'HD': 'sample_ID'}, inplace=True)  # Rename 'HD' column to 'sample_ID'
                 output_filepath = os.path.join(output_path, output_filename) 
-                file_name = output_filepath + f".{output_ext}"
-                print ("FINAL", file_name)
-                if output_ext == "csv":
-                    group_data.to_csv(file_name, index=False)
-                elif output_ext == "xlsx":
-                    group_data.to_excel(file_name, index=False)
+                group_data.to_csv(output_filepath, index=False)
                 print(f"Saved data for and Parent {group_parent} to {output_filename}")
 
         # Save the final DataFrame to a CSV file with the specified name
@@ -215,7 +210,7 @@ class ProcessMRXSData:
     @staticmethod
     def process_rate(output_path, final_data_filename):
 
-        final_df = pd.DataFrame(columns=['ID_Sample', 'Parent'])
+        final_df = pd.DataFrame(columns=['sample_ID', 'Parent'])
         no_xls_files = True
         
         # Check if the output path exists, and create it if not
@@ -238,8 +233,8 @@ class ProcessMRXSData:
                     xlsx_data = pd.read_excel(xlsx_file)
                     
         #        print (f"Columns:  {xlsx_data.columns}")
-                if all(col in xlsx_data.columns for col in ['ID_Sample', 'Antibody', 'Positivity Rate', 'Parent']):
-                    data = xlsx_data[['ID_Sample','Antibody','Parent', 'Positivity Rate']]
+                if all(col in xlsx_data.columns for col in ['sample_ID', 'Antibody', 'Positivity Rate', 'Parent']):
+                    data = xlsx_data[['sample_ID','Antibody','Parent', 'Positivity Rate']]
                     data = data.copy()
                     #data.rename(columns={'Positivity Rate': f"Positivity Rate ({xlsx_data['Antibody'].iloc[0]})"}, inplace=True)
      #               print(f"Data columns: {data.columns}")
@@ -248,12 +243,12 @@ class ProcessMRXSData:
                     final_df = pd.concat([final_df, data])
                     #final_df = pd.merge(final_df, data, on=['sample_ID', 'Parent'], how='outer')
 
-       # print (final_df) 
+        print (final_df) 
         
         # Merge duplicate samples based on 'sample_ID'
         final_files = ProcessMRXSData.merge_samples(final_df, final_data_filename)
         
-        #print (final_files)
+        print (final_files)
         #print (final_df_merged)
 
         if no_xls_files:
@@ -263,21 +258,21 @@ class ProcessMRXSData:
             final_df.to_csv(final_data_filename, index=False)
         elif final_data_filename.endswith('.xlsx'):
             final_df.to_excel(final_data_filename, index=False)
-        #final_data_filename += '.csv'
-        #final_df.to_csv(final_data_filename, index=False)
+        final_data_filename += '.csv'
+        final_df.to_csv(final_data_filename, index=False)
 
         return final_files
         #return a list of the files produced, so for each region, the graphs are going to be produced 
         
 
     def merge_duplicate_samples(data):
-        merged_data = data.pivot_table(index=['ID_Sample', 'Parent', 'Antibody'], columns='Antibody', values='Positivity Rate', aggfunc='first').reset_index()
+        merged_data = data.pivot_table(index=['sample_ID', 'Parent', 'Antibody'], columns='Antibody', values='Positivity Rate', aggfunc='first').reset_index()
         #merged_data.columns = [f"Positivity Rate ({antibody})" if antibody != 'sample_ID' else 'sample_ID' for antibody in merged_data.columns]
 
         #merged_data.columns = [f"{col[0]} ({col[1]})" if col[0] not in ('sample_ID', 'Parent') else col[0] for col in merged_data.columns]
         new_columns = []
         for col in merged_data.columns:
-            if col not in ('ID_Sample', 'Parent', 'Antibody'):
+            if col not in ('sample_ID', 'Parent', 'Antibody'):
                 antibody_name = data.loc[data['Antibody'] == col, 'Antibody'].iloc[0] if any(data['Antibody'] == col) else col
                 new_columns.append(f"Positivity Rate ({antibody_name})")
             else:
@@ -300,17 +295,17 @@ class ProcessMRXSData:
 
         for parent in parents: 
             parent_df = data[data['Parent'] == parent]
-            sample_ids = data['ID_Sample'].unique()
+            sample_ids = data['sample_ID'].unique()
 
             #Create a df for the current Parent value
 
-            parent_result_df = pd.DataFrame(columns=['ID_Sample'])
+            parent_result_df = pd.DataFrame(columns=['sample_ID'])
 
             for sample_id in sample_ids:
-                sample_id_df = parent_df[parent_df['ID_Sample'] == sample_id]
+                sample_id_df = parent_df[parent_df['sample_ID'] == sample_id]
                 if len(sample_id_df) > 1:
                     #Populate the dataframe
-                    row = {'ID_Sample' : int(sample_id)}
+                    row = {'sample_ID' : int(sample_id)}
                     for _, entry in sample_id_df.iterrows():
                         antibody_col = f"Positivity Rate ({entry['Antibody']})"
                         row[antibody_col] = entry['Positivity Rate']
@@ -320,11 +315,8 @@ class ProcessMRXSData:
             if not parent_result_df.empty:
                 extension = file.split('.')[1]
                 file_name= f"{parent}_data" + f".{extension}"
-                #print ("Porva orva", file_name)
-                if extension == "xlsx":
-                    parent_result_df.to_excel(file_name, index=False)
-                else:
-                    parent_result_df.to_csv(file_name, index=False)
+                print ("Porva orva", file_name)
+                parent_result_df.to_csv(file_name, index=False)
                 created_files.append(file_name)
 
         return created_files
@@ -344,13 +336,13 @@ class ProcessMRXSData:
             if filename.endswith('.csv'):
                     graph_data = pd.read_csv(filename)
             elif filename.endswith('.xlsx'):
-                graph_data = pd.read_excel(filename, engine='openpyxl')
+                graph_data = pd.read_excel(filename, engine='xlrd')
             
             graph_data = graph_data.dropna()
             
             pos_rate_columns = [col for col in graph_data.columns if 'Positivity Rate' in col]
             
-            #print("Data columns:", graph_data.columns)
+            print("Data columns:", graph_data.columns)
 
             if len(pos_rate_columns) < 2:
                 print("Not enough 'Positivity Rate' columns found for heatmaps.")
@@ -407,7 +399,7 @@ class ProcessMRXSData:
             if filename.endswith('.csv'):
                 graph_data = pd.read_csv(filename)
             elif filename.endswith('.xlsx'):
-                graph_data = pd.read_excel(filename, engine='openpyxl')
+                graph_data = pd.read_excel(filename, engine='xlrd')
 
             graph_data = graph_data.dropna()
 
@@ -477,7 +469,7 @@ class ProcessMRXSData:
             if filename.endswith('.csv'):
                     graph_data = pd.read_csv(filename)
             elif filename.endswith('.xlsx'):
-                graph_data = pd.read_excel(filename, engine='openpyxl')
+                graph_data = pd.read_excel(filename, engine='xlrd')
             
 
             graph_data = graph_data.dropna()
