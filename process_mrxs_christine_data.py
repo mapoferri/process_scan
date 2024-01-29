@@ -163,10 +163,15 @@ class ProcessMRXSData:
                 no_mrxs_files = False
                 
                 processor = ProcessMRXSData(mrxs_file, inventory_file)
-                #result_df = processor.process_data()
+                result_df = processor.process_data()
                 #print (result_df)
                 #result_dfs.append(result_df)
-                result_dfs.extend(processor.process_data())
+                if isinstance(result_df, pd.DataFrame):
+                    result_dfs.extend(result_df)
+                else:
+                    print(f"Skipping file {mrxs_file} - Processed data is not a DataFrame.")
+
+                #result_dfs.extend(processor.process_data())
             # Appending to an array, so should be fine
 
         print("Contents of result_dfs:")
