@@ -166,10 +166,10 @@ class ProcessMRXSData:
                 result_df = processor.process_data()
                 #print (result_df)
                 #result_dfs.append(result_df)
-                if isinstance(result_df, pd.DataFrame):
-                    result_dfs.extend(result_df)
-                else:
-                    print(f"Skipping file {mrxs_file} - Processed data is not a DataFrame.")
+                #if isinstance(result_df, pd.DataFrame):
+                result_dfs.extend(result_df)
+                #else:
+                #    print(f"Skipping file {mrxs_file} - Processed data is not a DataFrame.")
 
                 #result_dfs.extend(processor.process_data())
             # Appending to an array, so should be fine
@@ -180,33 +180,37 @@ class ProcessMRXSData:
             print(type(df))
             print(df)
         #    print(df[1]['Parent'].iloc[0], df[0])
-    
-        if no_mrxs_files:
-            print("No files with .mrxs extension found in the specified directory.")
-            sys.exit(1)
-         
+        valid_dataframes = [df for df in result_dfs if isinstance(df, pd.DataFrame)]
+
+        if not valid_dataframes:
+            print("No valid pandas DataFrames found in result_dfs. Skipping concatenation.")
+        else:    
+            if no_mrxs_files:
+                print("No files with .mrxs extension found in the specified directory.")
+                sys.exit(1)
+
         # Concatenate all result DataFrames into a single DataFrame
-        final_result = pd.concat(result_dfs)
-        print (final_result)
+            final_result = pd.concat(result_dfs)
+            print (final_result)
         # Use defaultdict to group data based on 'Parent'
-        grouped = defaultdict(lambda: defaultdict(list))
-        for result_df in result_dfs:
+            grouped = defaultdict(lambda: defaultdict(list))
+            for result_df in result_dfs:
             #grouped[result_df['Parent'].iloc[0]].append(result_df)
-            parent = result_df['Parent'].iloc[0]
-            antibody = result_df['Antibody'].iloc[0]
-            grouped[parent][antibody].append(result_df)
+                parent = result_df['Parent'].iloc[0]
+                antibody = result_df['Antibody'].iloc[0]
+                grouped[parent][antibody].append(result_df)
 
 
         #grouped = final_result.groupby(["Antibody", "Parent"])
-        for group_parent, parent_data in grouped.items():
-            for group_antibody, group_data_list in parent_data.items():
-                group_data = pd.concat(group_data_list, axis=0, ignore_index=True)
-                output_filename = f"{group_parent}_{group_antibody}_data.csv"
-                if 'HD' in group_data.columns: 
-                    group_data.rename(columns={'HD': 'ID_Sample'}, inplace=True)  # Rename 'HD' column to 'sample_ID'
-                output_filepath = os.path.join(output_path, output_filename) 
-                group_data.to_csv(output_filepath, index=False)
-                print(f"Saved data for and Parent {group_parent} to {output_filename}")
+            for group_parent, parent_data in grouped.items():
+                for group_antibody, group_data_list in parent_data.items():
+                    group_data = pd.concat(group_data_list, axis=0, ignore_index=True)
+                    output_filename = f"{group_parent}_{group_antibody}_data.csv"
+                    if 'HD' in group_data.columns: 
+                        group_data.rename(columns={'HD': 'ID_Sample'}, inplace=True)  # Rename 'HD' column to 'sample_ID'
+                    output_filepath = os.path.join(output_path, output_filename) 
+                    group_data.to_csv(output_filepath, index=False)
+                    print(f"Saved data for and Parent {group_parent} to {output_filename}")
 
         # Save the final DataFrame to a CSV file with the specified name
         #with open(output_filename, 'w', encoding='utf-8') as file:
