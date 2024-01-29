@@ -318,7 +318,7 @@ class ProcessMRXSData:
                 sample_id_df = parent_df[parent_df['ID_Sample'] == sample_id]
                 if len(sample_id_df) > 1:
                     #Populate the dataframe
-                    row = {'ID_Sample' : int(sample_id)}
+                    row = {'ID_Sample' : sample_id}
                     for _, entry in sample_id_df.iterrows():
                         antibody_col = f"Positivity Rate ({entry['Antibody']})"
                         row[antibody_col] = entry['Positivity Rate']
