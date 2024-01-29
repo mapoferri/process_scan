@@ -157,7 +157,7 @@ class ProcessMRXSData:
 
         # For each slide, call the process_data function
         for filename in os.listdir(directory_path):
-            if filename.endswith('.mrxs'):
+            if filename.endswith('.mrxs.txt'):
                 mrxs_file = os.path.join(directory_path, filename)
                 print(f"Processing file: {mrxs_file}")
                 no_mrxs_files = False
