@@ -1,5 +1,5 @@
 import argparse
-from process_mrxs_data import ProcessMRXSData
+from process_mrxs_christine_data import ProcessMRXSData
 
 def main():
     parser = argparse.ArgumentParser(description="Run MRXS data processing workflow")
