@@ -190,14 +190,14 @@ class ProcessMRXSData:
                 sys.exit(1)
 
         # Concatenate all result DataFrames into a single DataFrame
-            final_result = pd.concat(result_dfs)
+            final_result = pd.concat(valid_dataframes)
             print (final_result)
         # Use defaultdict to group data based on 'Parent'
             grouped = defaultdict(lambda: defaultdict(list))
-            for result_df in result_dfs:
+            for result_df in valid_dataframes:
             #grouped[result_df['Parent'].iloc[0]].append(result_df)
-                parent = result_df['Parent'].iloc[0]
-                antibody = result_df['Antibody'].iloc[0]
+                parent = valid_dataframes['Parent'].iloc[0]
+                antibody = valid_dataframes['Antibody'].iloc[0]
                 grouped[parent][antibody].append(result_df)
 
 
