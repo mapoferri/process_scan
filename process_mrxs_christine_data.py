@@ -196,8 +196,8 @@ class ProcessMRXSData:
             grouped = defaultdict(lambda: defaultdict(list))
             for result_df in valid_dataframes:
             #grouped[result_df['Parent'].iloc[0]].append(result_df)
-                parent = valid_dataframes['Parent'].iloc[0]
-                antibody = valid_dataframes['Antibody'].iloc[0]
+                parent = result_df['Parent'].iloc[0]
+                antibody = result_df['Antibody'].iloc[0]
                 grouped[parent][antibody].append(result_df)
 
 
