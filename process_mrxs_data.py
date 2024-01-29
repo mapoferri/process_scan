@@ -79,7 +79,7 @@ class ProcessMRXSData:
 
         # Create the merged dataframe based on the correspondence between the Image value and the ID_Slidescanner value in the Inventory
                 if not merged_df.empty:
-                    final_df = merged_df[['HD', 'Antibody', 'ID_Slidescanner', 'Image', 'Parent']]
+                    final_df = merged_df[['sample_ID', 'Antibody', 'ID_Slidescanner', 'Image', 'Parent']]
                     final_df = final_df.head(1)
                     final_df['ID_Slidescanner'] = final_df['ID_Slidescanner'].values[0]
                     final_df['Image'] = final_df['Image'].values[0]
@@ -100,7 +100,7 @@ class ProcessMRXSData:
                     #print(final_df.columns)
                 else:
                     print("Merged DataFrame is empty.")
-                    final_df = pd.DataFrame({'HD': [None], 'Antibody': [None], 'ID_Slidescanner': [None], 'Image': [None]})
+                    final_df = pd.DataFrame({'sample_ID': [None], 'Antibody': [None], 'ID_Slidescanner': [None], 'Image': [None]})
                     return final_df
 
 
@@ -128,12 +128,12 @@ class ProcessMRXSData:
 
         print(f"Processing immunopositivity rate for {xls_file}...")
         df_xls = pd.read_excel(xls_file)
-        hd_and_rate = df_xls[['HD', 'Positivity Rate']]
+        hd_and_rate = df_xls[['sample_ID', 'Positivity Rate']]
         
         # print(f"Checking columsn {hd_and_rate}")
         
         # Merge the extracted data based on the 'HD' column
-        final_df = final_df.merge(hd_and_rate, on='HD', how='left')
+        final_df = final_df.merge(hd_and_rate, on='sample_ID', how='left')
 
         return final_df
 
@@ -194,7 +194,8 @@ class ProcessMRXSData:
             for group_antibody, group_data_list in parent_data.items():
                 group_data = pd.concat(group_data_list, axis=0, ignore_index=True)
                 output_filename = f"{group_parent}_{group_antibody}_data.csv"
-                group_data.rename(columns={'HD': 'sample_ID'}, inplace=True)  # Rename 'HD' column to 'sample_ID'
+                if 'HD' in group_data.columns: 
+                    group_data.rename(columns={'HD': 'sample_ID'}, inplace=True)  # Rename 'HD' column to 'sample_ID'
                 output_filepath = os.path.join(output_path, output_filename) 
                 group_data.to_csv(output_filepath, index=False)
                 print(f"Saved data for and Parent {group_parent} to {output_filename}")
