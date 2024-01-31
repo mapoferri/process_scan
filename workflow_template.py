@@ -1,5 +1,5 @@
 import argparse
-from process_mrxs_christine_data import ProcessMRXSData
+from process_mrxs_data import ProcessMRXSData
 
 def main():
     parser = argparse.ArgumentParser(description="Run MRXS data processing workflow")
@@ -16,9 +16,11 @@ def main():
     output_ex = args.output_extension
     output_path = args.output_path
     final_data_filename = "final_data" + f".{output_ex}"
-    print ("NCHDDH", final_data_filename)
+    #print ("NCHDDH", final_data_filename)
+    
+   # print (final_data_filename)
 
-    final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path)
+    final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_ex)
     final_files = ProcessMRXSData.process_rate(output_path, final_data_filename)
     
     #print (final_rate)
@@ -29,8 +31,8 @@ def main():
 
     # Print the final DataFrame
     #print(f"Final DataFrame saved to {output_filename}")
-    print(f"Final Immunopositivity DataFrame saved to {final_data_filename}")
-    print(f"Processing complete.")
+    #print(f"Final Immunopositivity DataFrame saved to {final_data_filename}")
+    #print(f"Processing complete.")
 
 if __name__ == "__main__":
     main()

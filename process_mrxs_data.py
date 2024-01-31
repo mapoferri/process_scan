@@ -66,7 +66,7 @@ class ProcessMRXSData:
                 merged_df = pd.DataFrame() # Initial empty dataframe
                 for sheet_name, sheet_df in df_inventory.items():
                     if not sheet_df.empty:
-                        print (sheet_df.columns)
+                        #print (sheet_df.columns)
                         if 'ID_Slidescanner' not in sheet_df.columns:
                             print("Error: 'ID_Slidescanner' column not found in the sheet.")
                             #sys.exit(1)
@@ -139,7 +139,7 @@ class ProcessMRXSData:
 
 
     @staticmethod
-    def process_directory(directory_path, inventory_file, output_path):
+    def process_directory(directory_path, inventory_file, output_path, output_ex):
         """
         Process MRXS data from a directory, save antibody-specific data, and return the final DataFrame.
 
@@ -154,51 +154,71 @@ class ProcessMRXSData:
         result_dfs= []
         #final_result = pd.DataFrame(columns=['HD'])
         no_mrxs_files = True
+        final_result = None
+        #print(output_ex)
 
         # For each slide, call the process_data function
         for filename in os.listdir(directory_path):
-            if filename.endswith('.mrxs.txt'):
+            if filename.endswith('.mrxs'):
                 mrxs_file = os.path.join(directory_path, filename)
                 print(f"Processing file: {mrxs_file}")
                 no_mrxs_files = False
                 
                 processor = ProcessMRXSData(mrxs_file, inventory_file)
-                #result_df = processor.process_data()
+                result_df = processor.process_data()
                 #print (result_df)
                 #result_dfs.append(result_df)
-                result_dfs.extend(processor.process_data())
+                #if isinstance(result_df, pd.DataFrame):
+                result_dfs.extend(result_df)
+                #else:
+                #    print(f"Skipping file {mrxs_file} - Processed data is not a DataFrame.")
+
+                #result_dfs.extend(processor.process_data())
             # Appending to an array, so should be fine
 
-        print("Contents of result_dfs:")
+        #print("Contents of result_dfs:")
+        #print(result_dfs)
         #for df in result_dfs:
+        #    print(type(df))
+        #    print(df)
         #    print(df[1]['Parent'].iloc[0], df[0])
-    
-        if no_mrxs_files:
-            print("No files with .mrxs extension found in the specified directory.")
-            sys.exit(1)
-         
+        valid_dataframes = [df for df in result_dfs if isinstance(df, pd.DataFrame)]
+
+        if not valid_dataframes:
+            print("No valid pandas DataFrames found in result_dfs. Skipping concatenation.")
+        else:    
+            if no_mrxs_files:
+                print("No files with .mrxs extension found in the specified directory.")
+                sys.exit(1)
+
         # Concatenate all result DataFrames into a single DataFrame
-        final_result = pd.concat(result_dfs)
-        print (final_result)
+            final_result = pd.concat(valid_dataframes)
+            #print (final_result)
         # Use defaultdict to group data based on 'Parent'
-        grouped = defaultdict(lambda: defaultdict(list))
-        for result_df in result_dfs:
+            grouped = defaultdict(lambda: defaultdict(list))
+            for result_df in valid_dataframes:
             #grouped[result_df['Parent'].iloc[0]].append(result_df)
-            parent = result_df['Parent'].iloc[0]
-            antibody = result_df['Antibody'].iloc[0]
-            grouped[parent][antibody].append(result_df)
+                parent = result_df['Parent'].iloc[0]
+                antibody = result_df['Antibody'].iloc[0]
+                grouped[parent][antibody].append(result_df)
 
 
         #grouped = final_result.groupby(["Antibody", "Parent"])
-        for group_parent, parent_data in grouped.items():
-            for group_antibody, group_data_list in parent_data.items():
-                group_data = pd.concat(group_data_list, axis=0, ignore_index=True)
-                output_filename = f"{group_parent}_{group_antibody}_data.csv"
-                if 'HD' in group_data.columns: 
-                    group_data.rename(columns={'HD': 'ID_Sample'}, inplace=True)  # Rename 'HD' column to 'sample_ID'
-                output_filepath = os.path.join(output_path, output_filename) 
-                group_data.to_csv(output_filepath, index=False)
-                print(f"Saved data for and Parent {group_parent} to {output_filename}")
+            for group_parent, parent_data in grouped.items():
+                for group_antibody, group_data_list in parent_data.items():
+                    group_data = pd.concat(group_data_list, axis=0, ignore_index=True)
+                    output_filename = f"{group_parent}_{group_antibody}_data"
+                    if 'HD' in group_data.columns: 
+                        group_data.rename(columns={'HD': 'ID_Sample'}, inplace=True)  # Rename 'HD' column to 'sample_ID'
+                    output_filepath = os.path.join(output_path, output_filename + "."+ output_ex) 
+                    print(f"This is the {output_ex} and this is the filepath {output_filepath}, but the filename is {output_filename}.")
+                    if output_ex == 'csv':
+                        group_data.to_csv(output_filepath, index=False)
+                    elif output_ex == 'xlsx':
+                        group_data.to_excel(output_filepath, index=False)
+                    else:
+                        print(f"Unsupported format for {output_ex}.")
+                    print(f"Saved data for and Parent {group_parent} to {output_filename}")
 
         # Save the final DataFrame to a CSV file with the specified name
         #with open(output_filename, 'w', encoding='utf-8') as file:
@@ -244,12 +264,12 @@ class ProcessMRXSData:
                     final_df = pd.concat([final_df, data])
                     #final_df = pd.merge(final_df, data, on=['sample_ID', 'Parent'], how='outer')
 
-        print (final_df) 
+        #print (final_df) 
         
         # Merge duplicate samples based on 'sample_ID'
         final_files = ProcessMRXSData.merge_samples(final_df, final_data_filename)
         
-        print (final_files)
+        #print (final_files)
         #print (final_df_merged)
 
         if no_xls_files:
@@ -259,8 +279,8 @@ class ProcessMRXSData:
             final_df.to_csv(final_data_filename, index=False)
         elif final_data_filename.endswith('.xlsx'):
             final_df.to_excel(final_data_filename, index=False)
-        final_data_filename += '.csv'
-        final_df.to_csv(final_data_filename, index=False)
+        #final_data_filename += '.csv'
+        #final_df.to_csv(final_data_filename, index=False)
 
         return final_files
         #return a list of the files produced, so for each region, the graphs are going to be produced 
@@ -306,7 +326,7 @@ class ProcessMRXSData:
                 sample_id_df = parent_df[parent_df['ID_Sample'] == sample_id]
                 if len(sample_id_df) > 1:
                     #Populate the dataframe
-                    row = {'ID_Sample' : int(sample_id)}
+                    row = {'ID_Sample' : sample_id}
                     for _, entry in sample_id_df.iterrows():
                         antibody_col = f"Positivity Rate ({entry['Antibody']})"
                         row[antibody_col] = entry['Positivity Rate']
@@ -316,8 +336,15 @@ class ProcessMRXSData:
             if not parent_result_df.empty:
                 extension = file.split('.')[1]
                 file_name= f"{parent}_data" + f".{extension}"
-                print ("Porva orva", file_name)
-                parent_result_df.to_csv(file_name, index=False)
+                #print ("Porva orva", file_name)
+                if extension.lower() == 'csv':
+                     parent_result_df.to_csv(file_name, index=False)
+                elif extension.lower() == 'xlsx':
+                    parent_result_df.to_excel(file_name, index=False)
+                else:
+                    print(f"Unsupported file extension: {extension}. Skipping file {file_name}")
+
+                #parent_result_df.to_csv(file_name, index=False)
                 created_files.append(file_name)
 
         return created_files
@@ -333,17 +360,17 @@ class ProcessMRXSData:
         :param filename: Path to the data file for generating heatmaps.
         """
 
-        if filename.endswith(('.csv', '.xlsx')):
-            if filename.endswith('.csv'):
+        if filename.endswith(('csv', 'xlsx')):
+            if filename.endswith('csv'):
                     graph_data = pd.read_csv(filename)
-            elif filename.endswith('.xlsx'):
-                graph_data = pd.read_excel(filename, engine='xlrd')
+            elif filename.endswith('xlsx'):
+                graph_data = pd.read_excel(filename,  engine='openpyxl')
             
             graph_data = graph_data.dropna()
             
             pos_rate_columns = [col for col in graph_data.columns if 'Positivity Rate' in col]
             
-            print("Data columns:", graph_data.columns)
+            #print("Data columns:", graph_data.columns)
 
             if len(pos_rate_columns) < 2:
                 print("Not enough 'Positivity Rate' columns found for heatmaps.")
@@ -400,7 +427,7 @@ class ProcessMRXSData:
             if filename.endswith('.csv'):
                 graph_data = pd.read_csv(filename)
             elif filename.endswith('.xlsx'):
-                graph_data = pd.read_excel(filename, engine='xlrd')
+                graph_data = pd.read_excel(filename, engine='openpyxl')
 
             graph_data = graph_data.dropna()
 
@@ -470,7 +497,7 @@ class ProcessMRXSData:
             if filename.endswith('.csv'):
                     graph_data = pd.read_csv(filename)
             elif filename.endswith('.xlsx'):
-                graph_data = pd.read_excel(filename, engine='xlrd')
+                graph_data = pd.read_excel(filename, engine='openpyxl')
             
 
             graph_data = graph_data.dropna()
@@ -535,13 +562,13 @@ if __name__ == "__main__":
     output_path = args.output_path
     output_ex = args.output_extension
     final_data_filename = "final_data" + f".{output_ex}"
-    print ("Final data filename", final_data_filename)
+    #print ("Final data filename", final_data_filename)
 
-    final_data = ProcessMRXSData.process_directory(directory_path, inventory_file,  output_path)
-    final_rate = ProcessMRXSData.process_rate(output_path, final_data_filename)
+#    final_data = ProcessMRXSData.process_directory(directory_path, inventory_file,  output_path)
+#    final_rate = ProcessMRXSData.process_rate(output_path, final_data_filename)
 
-    ProcessMRXSData.process_heatmaps(final_rate)
-    ProcessMRXSData.process_scatterplots(final_rate)
+#    ProcessMRXSData.process_heatmaps(final_rate)
+#    ProcessMRXSData.process_scatterplots(final_rate)
     
 
     # Print the final DataFrame
