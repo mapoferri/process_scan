@@ -36,7 +36,7 @@ class ProcessMRXSData:
 
         # Open the text file and transform it into a DataFrame
         df_mrxs = pd.read_csv(self.mrxs_file, sep='\t', engine='python')
-        df_mrxs['Image'] = df_mrxs['Image'].str.rstrip('.mrxs')
+        df_mrxs['Image'] = df_mrxs['Image'].str.rstrip('.mrxs.txt')
         #print("DataFrame from text file:")
         #print(df_mrxs)
         
