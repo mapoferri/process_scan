@@ -36,7 +36,7 @@ class ProcessMRXSData:
 
         # Open the text file and transform it into a DataFrame
         df_mrxs = pd.read_csv(self.mrxs_file, sep='\t', engine='python')
-        df_mrxs['Image'] = df_mrxs['Image'].str.rstrip('.mrxs.txt')
+        df_mrxs['Image'] = df_mrxs['Image'].str.rstrip('.mrxs')
         #print("DataFrame from text file:")
         #print(df_mrxs)
         
@@ -159,7 +159,7 @@ class ProcessMRXSData:
 
         # For each slide, call the process_data function
         for filename in os.listdir(directory_path):
-            if filename.endswith('.mrxs'):
+            if filename.endswith('.mrxs.txt'):
                 mrxs_file = os.path.join(directory_path, filename)
                 print(f"Processing file: {mrxs_file}")
                 no_mrxs_files = False
