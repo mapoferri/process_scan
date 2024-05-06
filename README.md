@@ -8,10 +8,10 @@ This is the second half of the HDAB - Immunopositivity Tutorial available here (
 
 ## Prerequisites
 
-- Python 3.7 or higher
-- Required Python packages: `pandas`, `numpy`, `seaborn`, `matplotlib`
+- Python 3.8
+- Required Python packages: `pandas==1.5.3`, `numpy==1.21.4`, `seaborn==0.11.2`, `matplotlib`, `scipy==1.7.3` , `openpyxl==3.0.10`
 - Pip library opepyl > 3.2.0
-
+- QuPath 5.01 required!
 
 ## Non-expert Usage
 

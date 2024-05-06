@@ -40,8 +40,8 @@ class ProcessMRXSData:
         #print("DataFrame from text file:")
         #print(df_mrxs)
         
-        if 'Class' not in df_mrxs.columns:
-            print(f"Skipping MRXS file: {self.mrxs_file} - 'Class' column not found.")
+        if 'Classification' not in df_mrxs.columns:
+            print(f"Skipping MRXS file: {self.mrxs_file} - 'Classification' column not found.")
             return pd.DataFrame()
 
         final_df = pd.DataFrame() #Initial empty dataframe
@@ -55,8 +55,8 @@ class ProcessMRXSData:
             sub_df_mrxs = df_mrxs[df_mrxs['Parent'] == parent_value]
         
             # Start a counter for the Class column
-            positive_counter = (sub_df_mrxs['Class'] == 'PositiveCell').sum()
-            negative_counter = (sub_df_mrxs['Class'] == 'NegativeCell').sum()
+            positive_counter = (sub_df_mrxs['Classification'] == 'PositiveCell').sum()
+            negative_counter = (sub_df_mrxs['Classification'] == 'NegativeCell').sum()
 
             # Open the inventory file and select corresponding rows
             if self.inventory_file.endswith('.csv'):
