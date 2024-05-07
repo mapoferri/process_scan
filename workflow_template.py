@@ -26,6 +26,13 @@ def main():
     
    # print (final_data_filename)
     unwanted_suffixes = {'.txt'}
+    extension_processors = {
+        'mrxs': ProcessMRXSData,
+        'svs': ProcessSVSData,
+        'ndpi': ProcessNDPIData
+    }
+
+    extension_files = {}
 
     for filename in os.listdir(directory_path):
         base_name, extension = os.path.splitext(filename)
@@ -41,21 +48,25 @@ def main():
 
         if primary_extension:
             print(f"Filename: {filename}, Primary Extension: {primary_extension}")
+            extension_files[directory_path] = primary_extension
         
 
-        if primary_extension.lower() == 'mrxs':
+    for item in extension_files: 
+        print ('item:', item)
+        print ('ext', extension_files[item])
+        if extension_files[item]  == 'mrxs':
             final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_ex)
             final_files = ProcessMRXSData.process_rate(output_path, final_data_filename)
             for file in final_files:
                 ProcessMRXSData.process_heatmaps(file)
                 ProcessMRXSData.process_scatterplots(file)
-        elif primary_extension.lower() == 'svs':
+        elif extension_files[item] == 'svs':
             final_data = ProcessSVSData.process_directory(directory_path, inventory_file, output_path, output_ex)
             final_files = ProcessSVSData.process_rate(output_path, final_data_filename)
             for file in final_files:
                 ProcessSVSData.process_heatmaps(file)
                 ProcessSVSData.process_scatterplots(file)
-        elif primary_extension.lower() == 'ndpi':                        
+        elif extension_files[item] == 'ndpi':                        
             final_data = ProcessNDPIData.process_directory(directory_path, inventory_file, output_path, output_ex)
             final_files = ProcessNDPIData.process_rate(output_path, final_data_filename)
             for file in final_files:            
