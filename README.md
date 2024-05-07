@@ -1,6 +1,6 @@
-# ProcessMRXSData
+# Process Scanning Data
 
-ProcessMRXSData is a Python class designed to process data from MRXS files, merge it with inventory data, calculate immunopositivity statistics, and generate useful visualizations like heatmaps and scatterplots.
+ProcessSCanningData is a Python class designed to process data from MRXS, NDPI and SVS files, merge it with inventory data, calculate immunopositivity statistics, and generate useful visualizations like heatmaps and scatterplots.
 
 
 This is the second half of the HDAB - Immunopositivity Tutorial available here ().
@@ -20,8 +20,8 @@ This is the second half of the HDAB - Immunopositivity Tutorial available here (
 2. Extract the directory (whenever you like) and open the directory.
 
 ```
-unzip process_mrxs-main -d process_mrxs
-cd process_mrxs
+unzip process_scan-main -d process_scan
+cd process_scan
 ```
 
 3. Call directly the class (internal script providing already with the resulting rates and images):
@@ -30,6 +30,8 @@ There are different ways to do it via BASH terminal:
 
 Using the already workflow\_template in this directory: 
 
+### In this example the reference files are gonna be the mrxs, but it will work with the aforementioned scanning files.
+
 ```
 python workflow_template.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/to/outputs xlsx/csv (you will need to choose one of the two)
 
@@ -37,6 +39,8 @@ python workflow_template.py path/to/your/mrxs_files path/to/your/inventory.csv p
 
 
 Calling the script directly with the path stated for complete:
+### In this example the reference files are gonna be the mrxs, but it will work with the aforementioned scanning files.
+#### Please, change the class according to your scanning images files extension: process_mrxs_data.py, process_svs_data.py and/or process_ndpi_data.py
 
 ```
 python process_mrxs_data.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/to/outputs xlsx/csv
@@ -68,7 +72,9 @@ When defining the output\_filename, both the option .csv and .xslx are implement
 
 1. Clone or download this repository to your local machine.
 
-2. Import the `ProcessMRXSData` class into your Python script:
+2. Import the `ProcessScanData` class into your Python script:
+
+###  Please, change the class according to your scanning images files extension: ProcessMRXSData, ProcessSVSData and/or ProcessNDPIData
 
 ```python
 from process_mrxs_data import ProcessMRXSData

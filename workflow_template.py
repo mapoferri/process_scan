@@ -1,5 +1,11 @@
 import argparse
+import os
+
 from process_mrxs_data import ProcessMRXSData
+from process_svs_data import ProcessSVSData
+from process_ndpi_data import ProcessNDPIData
+
+
 
 def main():
     parser = argparse.ArgumentParser(description="Run MRXS data processing workflow")
@@ -20,14 +26,38 @@ def main():
     
    # print (final_data_filename)
 
-    final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_ex)
-    final_files = ProcessMRXSData.process_rate(output_path, final_data_filename)
+
+    for filename in os.list.dir(directory_path):
+        _, extension = os.path.splitext(filename)
+        print (extension)
+
+        if extension.lower() == '.mrxs':
+            final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_ex)
+            final_files = ProcessMRXSData.process_rate(output_path, final_data_filename)
+            for file in final_files:
+                ProcessMRXSData.process_heatmaps(file)
+                ProcessMRXSData.process_scatterplots(file)
+        elif extension.lower() == '.svs':
+            final_data = ProcessSVSData.process_directory(directory_path, inventory_file, output_path, output_ex)
+            final_files = ProcessSVSData.process_rate(output_path, final_data_filename)
+            for file in final_files:
+                ProcessSVSData.process_heatmaps(file)
+                ProcessSVSData.process_scatterplots(file)
+        elif extension.lower() == '.ndpi':                        
+            final_data = ProcessNDPIData.process_directory(directory_path, inventory_file, output_path, output_ex)
+            final_files = ProcessNDPIData.process_rate(output_path, final_data_filename)
+            for file in final_files:            
+                ProcessNDPIData.process_heatmaps(file)
+                ProcessNDPIData.process_scatterplots(file)
+
+#    final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_ex)
+#    final_files = ProcessMRXSData.process_rate(output_path, final_data_filename)
     
     #print (final_rate)
     #print ("Final:", final_files)
-    for file in final_files:
-        ProcessMRXSData.process_heatmaps(file)
-        ProcessMRXSData.process_scatterplots(file)
+#    for file in final_files:
+#        ProcessMRXSData.process_heatmaps(file)
+#        ProcessMRXSData.process_scatterplots(file)
 
     # Print the final DataFrame
     #print(f"Final DataFrame saved to {output_filename}")
