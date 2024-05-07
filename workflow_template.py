@@ -27,7 +27,7 @@ def main():
    # print (final_data_filename)
 
 
-    for filename in os.list.dir(directory_path):
+    for filename in os.listdir(directory_path):
         _, extension = os.path.splitext(filename)
         print (extension)
 

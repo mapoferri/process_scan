@@ -20,8 +20,8 @@ This is the second half of the HDAB - Immunopositivity Tutorial available here (
 2. Extract the directory (whenever you like) and open the directory.
 
 ```
-unzip process_scan-main -d process_scan
-cd process_scan
+unzip process_scan-main
+cd process_scan-main
 ```
 
 3. Call directly the class (internal script providing already with the resulting rates and images):
@@ -33,7 +33,7 @@ Using the already workflow\_template in this directory:
 ### In this example the reference files are gonna be the mrxs, but it will work with the aforementioned scanning files.
 
 ```
-python workflow_template.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/to/outputs xlsx/csv (you will need to choose one of the two)
+python workflow_template.py path/to/your/results path/to/your/Inventory.xlsx path/to/your/directory/to/outputs xlsx/csv (you will need to choose one of the two)
 
 ```
 
@@ -43,13 +43,13 @@ Calling the script directly with the path stated for complete:
 #### Please, change the class according to your scanning images files extension: process_mrxs_data.py, process_svs_data.py and/or process_ndpi_data.py
 
 ```
-python process_mrxs_data.py path/to/your/mrxs_files path/to/your/inventory.csv path/to/your/directory/to/outputs xlsx/csv
+python process_mrxs_data.py path/to/your/results path/to/your/Inventory.xlsx path/to/your/directory/to/outputs xlsx/csv
 ```
 
 Or using an ENV (environmental) variables.
 ```
 EXPORT mrxs_directory="path/to/your/mrxs_files"
-EXPORT inventory_file="path/to/your/inventory.csv"
+EXPORT inventory_file="path/to/your/Inventory.xlsx"
 EXPORT output_path="path/to/your/directory/to/outputs" #make sure to create it previously
 EXPORT output_extension="xlsx/csv"
 ```
@@ -84,7 +84,7 @@ from process_mrxs_data import ProcessMRXSData
 
 ```python
 mrxs_directory = "path/to/your/mrxs_files"
-inventory_file = "path/to/your/inventory.csv"
+inventory_file = "path/to/your/Inventory.xslx"
 output_path = "path/to/your/directory/to/outputs"
 output_extension = "xlsx/csv"
 
