@@ -25,25 +25,36 @@ def main():
     #print ("NCHDDH", final_data_filename)
     
    # print (final_data_filename)
-
+    unwanted_suffixes = {'.txt'}
 
     for filename in os.listdir(directory_path):
-        _, extension = os.path.splitext(filename)
+        base_name, extension = os.path.splitext(filename)
+        #_, extension = os.path.splitext(filename)
         print (extension)
+    
+        components = extension.split('.')
+        primary_extension = None
+        for comp in components:
+            if comp not in unwanted_suffixes:
+                primary_extension = comp
+        
+        if primary_extension:
+            print(f"Filename: {filename}, Primary Extension: {primary_extension}")
+        
 
-        if extension.lower() == '.mrxs':
+        if primary_extension.lower() == '.mrxs':
             final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_ex)
             final_files = ProcessMRXSData.process_rate(output_path, final_data_filename)
             for file in final_files:
                 ProcessMRXSData.process_heatmaps(file)
                 ProcessMRXSData.process_scatterplots(file)
-        elif extension.lower() == '.svs':
+        elif primary_extension.lower() == '.svs':
             final_data = ProcessSVSData.process_directory(directory_path, inventory_file, output_path, output_ex)
             final_files = ProcessSVSData.process_rate(output_path, final_data_filename)
             for file in final_files:
                 ProcessSVSData.process_heatmaps(file)
                 ProcessSVSData.process_scatterplots(file)
-        elif extension.lower() == '.ndpi':                        
+        elif primary_extension.lower() == '.ndpi':                        
             final_data = ProcessNDPIData.process_directory(directory_path, inventory_file, output_path, output_ex)
             final_files = ProcessNDPIData.process_rate(output_path, final_data_filename)
             for file in final_files:            
