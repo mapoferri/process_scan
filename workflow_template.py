@@ -32,29 +32,30 @@ def main():
         #_, extension = os.path.splitext(filename)
         print (extension)
     
-        components = extension.split('.')
-        primary_extension = None
-        for comp in components:
-            if comp not in unwanted_suffixes:
-                primary_extension = comp
+        components = base_name.rsplit('.', 1)
         
+        if len(components) > 1:
+            primary_extension = components[-1]
+        else:
+            primary_extension = None
+
         if primary_extension:
             print(f"Filename: {filename}, Primary Extension: {primary_extension}")
         
 
-        if primary_extension.lower() == '.mrxs':
+        if primary_extension.lower() == 'mrxs':
             final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_ex)
             final_files = ProcessMRXSData.process_rate(output_path, final_data_filename)
             for file in final_files:
                 ProcessMRXSData.process_heatmaps(file)
                 ProcessMRXSData.process_scatterplots(file)
-        elif primary_extension.lower() == '.svs':
+        elif primary_extension.lower() == 'svs':
             final_data = ProcessSVSData.process_directory(directory_path, inventory_file, output_path, output_ex)
             final_files = ProcessSVSData.process_rate(output_path, final_data_filename)
             for file in final_files:
                 ProcessSVSData.process_heatmaps(file)
                 ProcessSVSData.process_scatterplots(file)
-        elif primary_extension.lower() == '.ndpi':                        
+        elif primary_extension.lower() == 'ndpi':                        
             final_data = ProcessNDPIData.process_directory(directory_path, inventory_file, output_path, output_ex)
             final_files = ProcessNDPIData.process_rate(output_path, final_data_filename)
             for file in final_files:            
