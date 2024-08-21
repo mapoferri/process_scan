@@ -1,0 +1,23 @@
+name: Generate UML Diagrams
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Pyreverse
+        run: pip install pylint
+
+      - name: Generate UML diagrams
+        run: pyreverse -o png -ASmy your_python_file.py
+
+      - name: Upload UML diagrams
+        uses: actions/upload-artifact@v2
+        with:
+          name: uml-diagrams
+          path: *.png
