@@ -20,9 +20,13 @@ jobs:
         run: pip install pylint
 
       - name: Generate UML diagrams
-        run: pyreverse -o png -ASmy workflow_template.py
-
+        run: |
+          pyreverse -o png -ASmy ./*.py
+          ls -l  # List files in the directory to check the output
+          mv classes.png uml_diagrams.png || echo "Classes diagram not found"
+          
       - name: Upload UML diagrams
+        if: success() && steps.build.outputs.diagram_exists == 'true'
         uses: actions/upload-artifact@v2
         with:
           name: uml-diagrams
