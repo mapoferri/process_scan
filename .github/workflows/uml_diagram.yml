@@ -25,7 +25,6 @@ jobs:
           ls -l  # List files in the directory to check the output
           
       - name: Upload UML diagrams
-        if: success() && steps.build.outputs.diagram_exists == 'true'
         uses: actions/upload-artifact@v2
         with:
           name: uml-diagrams
