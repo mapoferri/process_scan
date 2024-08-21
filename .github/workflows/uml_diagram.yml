@@ -14,10 +14,10 @@ jobs:
         run: pip install pylint
 
       - name: Generate UML diagrams
-        run: pyreverse -o png -ASmy your_python_file.py
+        run: pyreverse -o png -ASmy workflow_template.py
 
       - name: Upload UML diagrams
         uses: actions/upload-artifact@v2
         with:
           name: uml-diagrams
-          path: *.png
+          path: uml-diagrams.png
