@@ -10,53 +10,53 @@ import seaborn as sns
 from collections import defaultdict
 
 
-class ProcessBIFData:
-    def __init__(self, bif_file, inventory_file):
+class ProcessSVSData:
+    def __init__(self, svs_file, inventory_file):
 
         """
-        Initialize the ProcessBIFData object with BIF file and inventory file.
+        Initialize the ProcessSVSData object with SVS file and inventory file.
 
-        :param bif_file: Path to the BIF data file.
+        :param svs_file: Path to the SVS data file.
         :param inventory_file: Path to the inventory file (CSV or Excel).
         """
 
-        self.bif_file = bif_file
+        self.svs_file = svs_file
         self.inventory_file = inventory_file
 
 
     def process_data(self):
 
         """
-        Process BIF data, merge with inventory, and calculate immunopositivity statistics.
+        Process SVS data, merge with inventory, and calculate immunopositivity statistics.
 
         :return: Final DataFrame with immunopositivity statistics.
         """
 
-        print(f"Processing data for {self.bif_file}...")
+        print(f"Processing data for {self.svs_file}...")
 
         # Open the text file and transform it into a DataFrame
-        df_bif = pd.read_csv(self.bif_file, sep='\t', engine='python')
-        df_bif['Image'] = df_bif['Image'].str.rstrip('.bif')
+        df_svs = pd.read_csv(self.svs_file, sep='\t', engine='python')
+        df_svs['Image'] = df_svs['Image'].str.rstrip('.svs')
         #print("DataFrame from text file:")
-        #print(df_bif)
+        #print(df_svs)
         
-        if 'Classification' not in df_bif.columns:
-            print(f"Skipping BIF file: {self.bif_file} - 'Classification' column not found.")
+        if 'Classification' not in df_svs.columns:
+            print(f"Skipping SVS file: {self.svs_file} - 'Classification' column not found.")
             return pd.DataFrame()
 
         final_df = pd.DataFrame() #Initial empty dataframe
 
         # Task 1A: Set the different collection for different regions
-        unique_parents = df_bif['Parent'].unique()
+        unique_parents = df_svs['Parent'].unique()
         dfs_list = []  # To separate the dataframes
 
         for parent_value in unique_parents:
             # Filter dataframe based on 'Parent' value
-            sub_df_bif = df_bif[df_bif['Parent'] == parent_value]
+            sub_df_svs = df_svs[df_svs['Parent'] == parent_value]
         
             # Start a counter for the Class column
-            positive_counter = (sub_df_bif['Classification'] == 'PositiveCell').sum()
-            negative_counter = (sub_df_bif['Classification'] == 'NegativeCell').sum()
+            positive_counter = (sub_df_svs['Classification'] == 'PositiveCell').sum()
+            negative_counter = (sub_df_svs['Classification'] == 'NegativeCell').sum()
 
             # Open the inventory file and select corresponding rows
             if self.inventory_file.endswith('.csv'):
@@ -72,7 +72,7 @@ class ProcessBIFData:
                             #sys.exit(1)
                             continue
                         sheet_df['ID_Slidescanner'] = sheet_df['ID_Slidescanner'].astype(str)
-                        result = sub_df_bif.merge(sheet_df, left_on='Image', right_on='ID_Slidescanner', how='inner')
+                        result = sub_df_svs.merge(sheet_df, left_on='Image', right_on='ID_Slidescanner', how='inner')
                         if not result.empty:
                             #antibody = sheet_name
                             merged_df = pd.concat([merged_df, result], ignore_index=True)
@@ -90,7 +90,7 @@ class ProcessBIFData:
                     
                         
                     if positive_counter == 0 or negative_counter == 0:
-                        print(f"Error: Counter for 'PositiveCell' or 'NegativeCell' is zero for {self.bif_file}. Skipping Positivity Rate calculation.")
+                        print(f"Error: Counter for 'PositiveCell' or 'NegativeCell' is zero for {self.svs_file}. Skipping Positivity Rate calculation.")
                     else:
                         final_df['Positivity Rate'] = (positive_counter * 100) / (positive_counter + negative_counter)
 
@@ -107,7 +107,7 @@ class ProcessBIFData:
         if not dfs_list:
             print("No data available for any Parent value.")
         else:
-            print(f"Processed data for {self.bif_file}.")
+            print(f"Processed data for {self.svs_file}.")
 
         return dfs_list
 
@@ -141,9 +141,9 @@ class ProcessBIFData:
     @staticmethod
     def process_directory(directory_path, inventory_file, output_path, output_ex):
         """
-        Process BIF data from a directory, save antibody-specific data, and return the final DataFrame.
+        Process SVS data from a directory, save antibody-specific data, and return the final DataFrame.
 
-        :param directory_path: Path to the directory containing .bif files.
+        :param directory_path: Path to the directory containing .svs files.
         :param inventory_file: Path to the inventory file (CSV or Excel).
         :param output_path: Path to save antibody-specific data.
         
@@ -153,25 +153,25 @@ class ProcessBIFData:
         #Array of the dataframes produced for each file
         result_dfs= []
         #final_result = pd.DataFrame(columns=['HD'])
-        no_bif_files = True
+        no_svs_files = True
         final_result = None
         #print(output_ex)
 
         # For each slide, call the process_data function
         for filename in os.listdir(directory_path):
-            if filename.endswith('.bif.txt'):
-                bif_file = os.path.join(directory_path, filename)
-                print(f"Processing file: {bif_file}")
-                no_bif_files = False
+            if filename.endswith('.svs.txt'):
+                svs_file = os.path.join(directory_path, filename)
+                print(f"Processing file: {svs_file}")
+                no_svs_files = False
                 
-                processor = ProcessBIFData(bif_file, inventory_file)
+                processor = ProcessSVSData(svs_file, inventory_file)
                 result_df = processor.process_data()
                 #print (result_df)
                 #result_dfs.append(result_df)
                 #if isinstance(result_df, pd.DataFrame):
                 result_dfs.extend(result_df)
                 #else:
-                #    print(f"Skipping file {bif_file} - Processed data is not a DataFrame.")
+                #    print(f"Skipping file {svs_file} - Processed data is not a DataFrame.")
 
                 #result_dfs.extend(processor.process_data())
             # Appending to an array, so should be fine
@@ -187,8 +187,8 @@ class ProcessBIFData:
         if not valid_dataframes:
             print("No valid pandas DataFrames found in result_dfs. Skipping concatenation.")
         else:    
-            if no_bif_files:
-                print("No files with .bif extension found in the specified directory.")
+            if no_svs_files:
+                print("No files with .svs extension found in the specified directory.")
                 sys.exit(1)
 
         # Concatenate all result DataFrames into a single DataFrame
@@ -246,7 +246,7 @@ class ProcessBIFData:
                 print(f"Processing file: {xlsx_file}")
                 no_xls_files = False
 
-                #processor = ProcessBIFData.process_positivity(xlsx_file, final_df)
+                #processor = ProcessSVSData.process_positivity(xlsx_file, final_df)
                 
                 if filename.endswith('.csv'):
                     xlsx_data = pd.read_csv(xlsx_file)
@@ -267,7 +267,7 @@ class ProcessBIFData:
         #print (final_df) 
         
         # Merge duplicate samples based on 'sample_ID'
-        final_files = ProcessBIFData.merge_samples(final_df, final_data_filename)
+        final_files = ProcessSVSData.merge_samples(final_df, final_data_filename)
         
         #print (final_files)
         #print (final_df_merged)
@@ -546,8 +546,8 @@ class ProcessBIFData:
 
 # Example usage
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process BIF data with the ProcessBIFData class")
-    parser.add_argument("directory_path", help="Path to the directory containing .bif files")
+    parser = argparse.ArgumentParser(description="Process SVS data with the ProcessSVSData class")
+    parser.add_argument("directory_path", help="Path to the directory containing .svs files")
     parser.add_argument("inventory_file", help="Path to the inventory file")
     parser.add_argument("output_path", help="Path to the directory containing output files")
     parser.add_argument("output_filename", help="Name of the output CSV file antibody-specific")
@@ -564,11 +564,11 @@ if __name__ == "__main__":
     final_data_filename = "final_data" + f".{output_ex}"
     #print ("Final data filename", final_data_filename)
 
-#    final_data = ProcessBIFData.process_directory(directory_path, inventory_file,  output_path)
-#    final_rate = ProcessBIFData.process_rate(output_path, final_data_filename)
+#    final_data = ProcessSVSData.process_directory(directory_path, inventory_file,  output_path)
+#    final_rate = ProcessSVSData.process_rate(output_path, final_data_filename)
 
-#    ProcessBIFData.process_heatmaps(final_rate)
-#    ProcessBIFData.process_scatterplots(final_rate)
+#    ProcessSVSData.process_heatmaps(final_rate)
+#    ProcessSVSData.process_scatterplots(final_rate)
     
 
     # Print the final DataFrame

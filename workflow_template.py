@@ -4,7 +4,8 @@ import os
 from process_mrxs_data import ProcessMRXSData
 from process_svs_data import ProcessSVSData
 from process_ndpi_data import ProcessNDPIData
-
+from process_bif_data import ProcessBIFData
+from process_czi_data import ProcessCZIData
 
 
 def main():
@@ -29,7 +30,9 @@ def main():
     extension_processors = {
         'mrxs': ProcessMRXSData,
         'svs': ProcessSVSData,
-        'ndpi': ProcessNDPIData
+        'ndpi': ProcessNDPIData,
+        'bif': ProcessBIFData,
+        'czi': ProcessCZIData
     }
 
     extension_files = {}
@@ -72,6 +75,20 @@ def main():
             for file in final_files:            
                 ProcessNDPIData.process_heatmaps(file)
                 ProcessNDPIData.process_scatterplots(file)
+        elif extension_files[item] == 'bif':
+            final_data = ProcessBIFData.process_directory(directory_path, inventory_file, output_path, output_ex)
+            final_files = ProcessBIFData.process_rate(output_path, final_data_filename)
+            for file in final_files:
+                ProcessBIFData.process_heatmaps(file)
+                ProcessBIFData.process_scatterplots(file)
+        elif extension_files[item] == 'czi':
+            final_data = ProcessCZIData.process_directory(directory_path, inventory_file, output_path, output_ex)
+            final_files = ProcessCZIData.process_rate(output_path, final_data_filename)
+            for file in final_files:
+                ProcessCZIData.process_heatmaps(file)
+                ProcessCZIData.process_scatterplots(file)
+
+
 
 #    final_data = ProcessMRXSData.process_directory(directory_path, inventory_file, output_path, output_ex)
 #    final_files = ProcessMRXSData.process_rate(output_path, final_data_filename)

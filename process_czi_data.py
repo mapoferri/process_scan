@@ -10,11 +10,11 @@ import seaborn as sns
 from collections import defaultdict
 
 
-class ProcessSVSData:
+class ProcessCZIData:
     def __init__(self, czi_file, inventory_file):
 
         """
-        Initialize the ProcessSVSData object with CZI file and inventory file.
+        Initialize the ProcessCZIData object with CZI file and inventory file.
 
         :param czi_file: Path to the CZI data file.
         :param inventory_file: Path to the inventory file (CSV or Excel).
@@ -141,7 +141,7 @@ class ProcessSVSData:
     @staticmethod
     def process_directory(directory_path, inventory_file, output_path, output_ex):
         """
-        Process SVS data from a directory, save antibody-specific data, and return the final DataFrame.
+        Process CZI data from a directory, save antibody-specific data, and return the final DataFrame.
 
         :param directory_path: Path to the directory containing .czi files.
         :param inventory_file: Path to the inventory file (CSV or Excel).
@@ -164,7 +164,7 @@ class ProcessSVSData:
                 print(f"Processing file: {czi_file}")
                 no_czi_files = False
                 
-                processor = ProcessSVSData(czi_file, inventory_file)
+                processor = ProcessCZIData(czi_file, inventory_file)
                 result_df = processor.process_data()
                 #print (result_df)
                 #result_dfs.append(result_df)
@@ -246,7 +246,7 @@ class ProcessSVSData:
                 print(f"Processing file: {xlsx_file}")
                 no_xls_files = False
 
-                #processor = ProcessSVSData.process_positivity(xlsx_file, final_df)
+                #processor = ProcessCZIData.process_positivity(xlsx_file, final_df)
                 
                 if filename.endswith('.csv'):
                     xlsx_data = pd.read_csv(xlsx_file)
@@ -267,7 +267,7 @@ class ProcessSVSData:
         #print (final_df) 
         
         # Merge duplicate samples based on 'sample_ID'
-        final_files = ProcessSVSData.merge_samples(final_df, final_data_filename)
+        final_files = ProcessCZIData.merge_samples(final_df, final_data_filename)
         
         #print (final_files)
         #print (final_df_merged)
@@ -546,7 +546,7 @@ class ProcessSVSData:
 
 # Example usage
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process SVS data with the ProcessSVSData class")
+    parser = argparse.ArgumentParser(description="Process CZI data with the ProcessCZIData class")
     parser.add_argument("directory_path", help="Path to the directory containing .czi files")
     parser.add_argument("inventory_file", help="Path to the inventory file")
     parser.add_argument("output_path", help="Path to the directory containing output files")
@@ -564,11 +564,11 @@ if __name__ == "__main__":
     final_data_filename = "final_data" + f".{output_ex}"
     #print ("Final data filename", final_data_filename)
 
-#    final_data = ProcessSVSData.process_directory(directory_path, inventory_file,  output_path)
-#    final_rate = ProcessSVSData.process_rate(output_path, final_data_filename)
+#    final_data = ProcessCZIData.process_directory(directory_path, inventory_file,  output_path)
+#    final_rate = ProcessCZIData.process_rate(output_path, final_data_filename)
 
-#    ProcessSVSData.process_heatmaps(final_rate)
-#    ProcessSVSData.process_scatterplots(final_rate)
+#    ProcessCZIData.process_heatmaps(final_rate)
+#    ProcessCZIData.process_scatterplots(final_rate)
     
 
     # Print the final DataFrame
